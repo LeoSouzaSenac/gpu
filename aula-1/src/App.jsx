@@ -1,8 +1,7 @@
 import React, { useState } from "react";
 import {
-  Cpu, Zap, GitBranch, Terminal, PlayCircle, ChevronDown, Check,
-  Info, Thermometer, HardDrive, Activity, Box, ArrowRight, Layers,
-  MonitorPlay, FolderOpen, Settings2, ListChecks, HelpCircle
+  Cpu,  Terminal, PlayCircle, ChevronDown, Check,
+  Info, ArrowRight, FolderOpen, Settings2 
 } from "lucide-react";
 
 const theme = {
