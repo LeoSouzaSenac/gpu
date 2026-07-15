@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import {
-  Cpu,  Terminal, PlayCircle, ChevronDown, Check,
-  Info,  ArrowRight, FolderOpen, Settings2
+  Cpu, Terminal, PlayCircle, ChevronDown, Check,
+  Info, ArrowRight, FolderOpen, Settings2
 } from "lucide-react";
 
 const theme = {
@@ -500,30 +500,23 @@ function Exercise({ n, title, intro, code, questions, tip, defaultOpen, walkthro
 
 /* ---------- Nav ---------- */
 
-const navItems = [
-  { id: "hook", label: "O gancho" },
-  { id: "von-neumann", label: "Von Neumann" },
-  { id: "harvard", label: "Harvard" },
-  { id: "cpu-gpu", label: "CPU x GPU" },
-  { id: "nvidia-smi", label: "nvidia-smi" },
-  { id: "colab", label: "Google Colab" },
-  { id: "exercicios", label: "Exercícios" },
-];
-
-function Nav() {
+function TopNav({ active }) {
   return (
     <div style={{
-      position: "sticky", top: 0, zIndex: 10, background: theme.blueprint,
+      position: "sticky", top: 0, zIndex: 20, background: theme.ink,
       borderBottom: `0.5px solid ${theme.blueprintLine}`, padding: "0 24px",
-      display: "flex", alignItems: "center", gap: 20, overflowX: "auto"
+      display: "flex", alignItems: "center", gap: 4
     }}>
-      <span style={{ fontFamily: fontDisplay, fontWeight: 600, fontSize: 13, color: theme.amber, padding: "14px 0", whiteSpace: "nowrap" }}>UC1 · AULA 1</span>
-      {navItems.map((it) => (
-        <a key={it.id} href={`#${it.id}`} style={{
-          fontFamily: fontMono, fontSize: 12, color: theme.textOnDark, textDecoration: "none",
-          padding: "14px 0", whiteSpace: "nowrap", opacity: 0.85
-        }}>{it.label}</a>
-      ))}
+      <a href="#" style={{
+        fontFamily: fontDisplay, fontWeight: 600, fontSize: 13, textDecoration: "none",
+        padding: "16px 18px", color: active === "aula1" ? theme.amber : theme.textOnDark,
+        borderBottom: active === "aula1" ? `2px solid ${theme.amber}` : "2px solid transparent"
+      }}>Aula 1</a>
+      <a href="#aula2" style={{
+        fontFamily: fontDisplay, fontWeight: 600, fontSize: 13, textDecoration: "none",
+        padding: "16px 18px", color: active === "aula2" ? theme.amber : theme.textOnDark,
+        borderBottom: active === "aula2" ? `2px solid ${theme.amber}` : "2px solid transparent"
+      }}>Aula 2</a>
     </div>
   );
 }
@@ -534,7 +527,7 @@ export default function Aula() {
   return (
     <div style={{ background: theme.paper, minHeight: "100%" }}>
       <Fonts />
-      <Nav />
+      <TopNav active="aula1" />
 
       {/* HERO */}
       <Section dark id="hook" style={{ paddingTop: 88, paddingBottom: 88 }}>
@@ -1142,9 +1135,17 @@ A GPU foi 133.7x mais rápida que a CPU`}
           <ArrowRight size={16} color={theme.amber} />
           <span style={{ fontFamily: fontMono, fontSize: 12, color: theme.amber, textTransform: "uppercase", letterSpacing: "0.06em" }}>Próxima aula</span>
         </div>
-        <P dark style={{ margin: 0, fontSize: 15.5 }}>
+        <P dark style={{ fontSize: 15.5 }}>
           SIMD, MIMD, RISC e CISC — vamos entender, com mais profundidade técnica, exatamente por que a GPU é fisicamente desenhada do jeito que é.
         </P>
+        <a href="#aula2" style={{ textDecoration: "none" }}>
+          <div style={{
+            display: "inline-flex", alignItems: "center", gap: 10, background: theme.amber, color: theme.ink,
+            fontFamily: fontDisplay, fontWeight: 600, fontSize: 15, padding: "14px 24px", borderRadius: 8
+          }}>
+            Ir pra Aula 2 <ArrowRight size={16} />
+          </div>
+        </a>
       </Section>
     </div>
   );

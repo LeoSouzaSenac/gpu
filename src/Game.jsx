@@ -670,6 +670,27 @@ const GAMES = [
   { id: "glossario", title: "Glossário Blitz", desc: "30 termos técnicos da aula, contra o relógio.", time: "~12 min", color: theme.teal, icon: Sparkles, comp: GlossarioBlitz },
 ];
 
+function TopNav({ active }) {
+  return (
+    <div style={{
+      position: "sticky", top: 0, zIndex: 20, background: theme.ink,
+      borderBottom: `0.5px solid ${theme.blueprintLine}`, padding: "0 24px",
+      display: "flex", alignItems: "center", gap: 4
+    }}>
+      <a href="#" style={{
+        fontFamily: fontDisplay, fontWeight: 600, fontSize: 13, textDecoration: "none",
+        padding: "16px 18px", color: active === "aula1" ? theme.amber : theme.textOnDark,
+        borderBottom: active === "aula1" ? `2px solid ${theme.amber}` : "2px solid transparent"
+      }}>Aula 1</a>
+      <a href="#aula2" style={{
+        fontFamily: fontDisplay, fontWeight: 600, fontSize: 13, textDecoration: "none",
+        padding: "16px 18px", color: active === "aula2" ? theme.amber : theme.textOnDark,
+        borderBottom: active === "aula2" ? `2px solid ${theme.amber}` : "2px solid transparent"
+      }}>Aula 2</a>
+    </div>
+  );
+}
+
 export default function GpuGame() {
   const [screen, setScreen] = useState("hub");
   const [xp, setXp] = useState(0);
@@ -687,6 +708,7 @@ export default function GpuGame() {
     return (
       <div style={{ background: theme.blueprint, minHeight: "100%" }}>
         <Fonts />
+        <TopNav active="aula1" />
         <Comp key={game.id} onFinish={(pts) => finishGame(game.id, pts)} />
       </div>
     );
@@ -695,6 +717,7 @@ export default function GpuGame() {
   return (
     <div style={{ background: theme.paper, minHeight: "100%" }}>
       <Fonts />
+      <TopNav active="aula1" />
       <div style={{ background: theme.blueprint, padding: "40px 24px 32px", position: "relative", overflow: "hidden" }}>
         <div style={{
           position: "absolute", inset: 0, opacity: 0.35, pointerEvents: "none",
@@ -702,11 +725,7 @@ export default function GpuGame() {
           backgroundSize: "36px 36px"
         }} />
         <div style={{ maxWidth: 900, margin: "0 auto", position: "relative" }}>
-          <a href="#" style={{
-            display: "inline-flex", alignItems: "center", gap: 6, textDecoration: "none",
-            color: theme.textOnDark, fontFamily: fontMono, fontSize: 12.5, marginBottom: 18
-          }}><ArrowLeft size={14} /> voltar pra aula</a>
-          <div style={{ fontFamily: fontMono, fontSize: 12, color: theme.amber, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10, marginTop: 14 }}>
+          <div style={{ fontFamily: fontMono, fontSize: 12, color: theme.amber, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>
             UC1 · Aula 1 · Prática de fixação
           </div>
           <h1 style={{ fontFamily: fontDisplay, fontWeight: 700, fontSize: 34, color: "#F4F1E8", marginBottom: 10 }}>GPU Game</h1>
