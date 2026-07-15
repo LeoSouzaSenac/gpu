@@ -383,6 +383,21 @@ export default function Aula2() {
         </div>
       </Section>
 
+      {/* PARALELISMO */}
+      <Section>
+        <Eyebrow color={theme.copper}>O conceito por trás de tudo hoje</Eyebrow>
+        <H2>O que é, de fato, paralelismo?</H2>
+        <P>
+          Antes de entrar nos nomes técnicos, vale fixar uma ideia simples: <strong>paralelismo é fazer mais de uma coisa ao mesmo tempo, de verdade</strong> — não uma coisa rapidinho depois da outra (o que dá a ilusão de simultaneidade), mas duas ou mais coisas acontecendo no mesmo instante exato.
+        </P>
+        <P>
+          Pensa em duas pessoas lavando louça: se só existe 1 pia, cada uma lava um prato por vez, alternando — isso não é paralelismo, é só revezamento rápido. Agora, se existem 2 pias, cada pessoa numa, lavando ao mesmo tempo — isso sim é paralelismo: duas coisas acontecendo simultaneamente, de verdade, porque existe hardware duplicado (2 pias) pra sustentar isso.
+        </P>
+        <P>
+          Hoje vamos ver paralelismo aparecendo em 4 lugares completamente diferentes dentro de um computador — desde o circuito mais interno da GPU até o sistema operacional gerenciando dezenas de programas. Cada seção de hoje é, no fundo, uma resposta diferente pra mesma pergunta: <em>"como fazer mais de uma coisa ao mesmo tempo, com hardware limitado?"</em>
+        </P>
+      </Section>
+
       {/* TAXONOMIA DE FLYNN */}
       <Section>
         <Eyebrow color={theme.copper}>Ponto de partida</Eyebrow>
@@ -492,7 +507,7 @@ export default function Aula2() {
         </P>
 
         <P dark style={{ fontSize: 15, color: theme.textOnDark }}>Exemplo concreto — somar dois números que estão guardados na memória e guardar o resultado:</P>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 20 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 14 }}>
           <div style={{ background: "#101E38", borderRadius: 10, padding: 18 }}>
             <div style={{ fontFamily: fontDisplay, fontSize: 13, fontWeight: 600, color: theme.copper, marginBottom: 10 }}>CISC — 1 instrução complexa</div>
             <CodeBlock code={`ADD [C], [A], [B]`} />
@@ -503,22 +518,67 @@ export default function Aula2() {
           </div>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1, background: theme.blueprintLine, borderRadius: 10, overflow: "hidden" }}>
+        <div style={{ background: theme.amberBg, borderRadius: 10, padding: "16px 18px", marginBottom: 24 }}>
+          <div style={{ fontFamily: fontDisplay, fontWeight: 600, fontSize: 13.5, color: theme.amberDark, marginBottom: 10 }}>
+            Peraí — que "linguagem" é essa no código acima?
+          </div>
+          <P style={{ fontSize: 14.5, color: "#4A3B1E", marginBottom: 10 }}>
+            Não é nenhuma linguagem de programação de verdade (não é Python) — é uma representação simplificada de <strong>Assembly</strong>, a linguagem mais "crua" possível, bem perto do que o processador realmente entende. Cada palavra tem um significado específico:
+          </P>
+          <div style={{ display: "grid", gap: 8 }}>
+            {[
+              { term: "[A], [B], [C]", desc: "os colchetes significam 'o valor guardado no endereço de memória A' (não o endereço em si, mas o número que está guardado lá dentro)." },
+              { term: "R1, R2, R3", desc: "são registradores — lembra deles? São os 'bolsos rápidos' dentro da CPU que vimos na Aula 1, usados pra guardar um número por um instante, sem precisar ir até a memória de novo." },
+              { term: "LOAD", desc: "'carregar': pega um valor que está na memória e traz pra dentro de um registrador." },
+              { term: "STORE", desc: "'guardar': faz o caminho inverso — pega o valor que está num registrador e escreve ele de volta na memória." },
+              { term: "ADD", desc: "soma dois valores. No exemplo CISC, ela soma os valores de A e B e já guarda direto em C, tudo numa instrução só. No exemplo RISC, ela só soma o que já está nos registradores R1 e R2, guardando em R3 — quem busca e quem guarda são instruções separadas (LOAD e STORE)." },
+            ].map((t) => (
+              <div key={t.term} style={{ display: "flex", gap: 12, background: "#FBEDD3", borderRadius: 8, padding: "8px 10px" }}>
+                <code style={{ fontFamily: fontMono, fontSize: 12, color: theme.amberDark, flexShrink: 0, minWidth: 90 }}>{t.term}</code>
+                <span style={{ fontFamily: fontBody, fontSize: 13.5, color: "#4A3B1E", lineHeight: 1.6 }}>{t.desc}</span>
+              </div>
+            ))}
+          </div>
+          <P style={{ fontSize: 14.5, color: "#4A3B1E", marginTop: 10, marginBottom: 0 }}>
+            Repare a diferença estrutural: a versão CISC faz "busca A, busca B, soma, guarda em C" tudo dentro de uma única instrução (o processador esconde essa complexidade internamente). A versão RISC obriga você a escrever cada um desses passos separadamente — mais linhas de código, só que cada linha é simples e previsível.
+          </P>
+        </div>
+
+        <div style={{ display: "grid", gap: 12 }}>
           {[
-            { label: "Tamanho das instruções", cisc: "variável (algumas curtas, outras longas)", risc: "fixo — todas do mesmo tamanho" },
-            { label: "Instruções por tarefa", cisc: "poucas, mas complexas de decodificar", risc: "mais instruções, mas cada uma é rápida" },
-            { label: "Facilidade de pipeline", cisc: "difícil (instruções irregulares atrapalham)", risc: "fácil — é o que veremos na próxima seção" },
-            { label: "Exemplos reais", cisc: "x86 / x86-64 (Intel, AMD)", risc: "ARM (celulares, Apple M1/M2/M3), RISC-V" },
+            {
+              label: "Tamanho das instruções",
+              cisc: "variável (algumas curtas, outras longas)",
+              risc: "fixo — todas do mesmo tamanho",
+              why: "Numa CPU RISC, toda instrução ocupa, por exemplo, sempre 32 bits — nem mais, nem menos. Isso pode parecer um detalhe pequeno, mas faz uma diferença enorme: como o processador já sabe de antemão exatamente onde cada instrução termina e a próxima começa, ele consegue ir buscando e preparando várias instruções seguidas, em fila, sem precisar 'ler primeiro pra saber o tamanho'. Numa CISC, como cada instrução pode ter um tamanho diferente, o processador precisa primeiro examinar uma instrução pra descobrir onde ela termina, antes de saber onde a próxima começa — um trabalho extra, repetido a cada instrução."
+            },
+            {
+              label: "Instruções por tarefa",
+              cisc: "poucas, mas complexas de decodificar",
+              risc: "mais instruções, mas cada uma é rápida",
+              why: "É o trade-off que o próprio exemplo acima mostra: 1 instrução CISC versus 4 instruções RISC pra fazer a mesma soma. A CISC 'economiza linhas', mas essa 1 instrução é mais complicada de interpretar (decodificar) internamente. A RISC precisa de mais linhas, mas cada uma é tão simples que decodificar ela quase não toma tempo nenhum — no fim, a soma total pode ser tão rápida quanto (ou mais rápida que) a versão CISC."
+            },
+            {
+              label: "Facilidade de pipeline",
+              cisc: "difícil (instruções irregulares atrapalham)",
+              risc: "fácil",
+              why: "Vamos ver isso em detalhe na próxima seção, mas o resumo é: pipeline funciona bem quando toda instrução gasta um tempo previsível em cada etapa. Como as instruções RISC são uniformes (mesmo tamanho, complexidade parecida), é fácil garantir esse ritmo constante. Já numa CISC, uma instrução complexa pode 'travar' uma etapa do pipeline por mais tempo que as outras, quebrando o ritmo e obrigando a arquitetura a usar truques bem mais elaborados pra não perder desempenho."
+            },
+            {
+              label: "Exemplos reais",
+              cisc: "x86 / x86-64 (Intel, AMD)",
+              risc: "ARM (celulares, Apple M1/M2/M3), RISC-V",
+              why: "Se o processador do seu notebook é Intel ou AMD, ele é CISC (por fora, pelo menos — veja o Exercício 2, que mostra uma reviravolta interessante nisso). Se é um celular, um Raspberry Pi, ou um Mac recente (a partir de 2020), ele é RISC."
+            },
           ].map((row) => (
-            <React.Fragment key={row.label}>
-              <div style={{ background: theme.blueprint, padding: 14 }}>
-                <div style={{ fontFamily: fontMono, fontSize: 10.5, color: theme.textOnDark, opacity: 0.7 }}>{row.label}</div>
+            <div key={row.label} style={{ background: "#101E38", borderRadius: 10, padding: "16px 18px" }}>
+              <div style={{ fontFamily: fontMono, fontSize: 11, color: theme.textOnDark, opacity: 0.7, textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 8 }}>{row.label}</div>
+              <div style={{ display: "flex", gap: 16, marginBottom: 10, flexWrap: "wrap" }}>
+                <span style={{ fontFamily: fontBody, fontSize: 14, color: theme.copper, flex: "1 1 200px" }}><strong>CISC:</strong> {row.cisc}</span>
+                <span style={{ fontFamily: fontBody, fontSize: 14, color: theme.teal, flex: "1 1 200px" }}><strong>RISC:</strong> {row.risc}</span>
               </div>
-              <div style={{ background: theme.blueprint, padding: 14, display: "flex", gap: 16 }}>
-                <span style={{ fontFamily: fontBody, fontSize: 13, color: theme.copper, flex: 1 }}><strong>CISC:</strong> {row.cisc}</span>
-                <span style={{ fontFamily: fontBody, fontSize: 13, color: theme.teal, flex: 1 }}><strong>RISC:</strong> {row.risc}</span>
-              </div>
-            </React.Fragment>
+              <P dark style={{ fontSize: 13.5, color: theme.textOnDark, marginBottom: 0 }}>{row.why}</P>
+            </div>
           ))}
         </div>
 
@@ -587,10 +647,63 @@ export default function Aula2() {
 
         <div style={{ marginTop: 28, background: "#101E38", borderRadius: 10, padding: "18px 20px" }}>
           <div style={{ fontFamily: fontDisplay, fontWeight: 600, fontSize: 15, color: theme.teal, marginBottom: 8 }}>E uma thread?</div>
-          <P dark style={{ fontSize: 15, marginBottom: 0 }}>
-            Uma <strong style={{ color: "#F4F1E8" }}>thread</strong> é uma "linha de execução" dentro de um processo — e, diferente de dois processos separados, várias threads do MESMO processo compartilham a mesma memória entre si. Foi exatamente isso que usamos no Exercício 2 da Aula 1, quando criamos uma <Term>thread</Term> pra rodar o cálculo pesado "ao mesmo tempo" que o resto do código lia a GPU. O Exercício 6 de hoje mostra, na prática, por que esse compartilhamento de memória entre threads é poderoso — e também perigoso.
+          <P dark style={{ fontSize: 15 }}>
+            Pensa num processo como uma <strong style={{ color: "#F4F1E8" }}>casa inteira</strong>: ela tem seu próprio endereço, suas próprias paredes, sua própria geladeira — nada disso é compartilhado com a casa do vizinho (outro processo). Uma <strong style={{ color: "#F4F1E8" }}>thread</strong> é como uma <strong style={{ color: "#F4F1E8" }}>pessoa morando dentro dessa casa</strong>: pode ter mais de uma pessoa (mais de uma thread) morando na mesma casa (o mesmo processo), e todas elas compartilham a mesma geladeira, a mesma cozinha, os mesmos móveis — ou seja, a mesma memória.
+          </P>
+          <P dark style={{ fontSize: 15 }}>
+            Cada pessoa (thread) pode estar fazendo uma tarefa diferente ao mesmo tempo — uma lavando louça, outra assistindo TV — mas se as duas tentarem mexer na mesma coisa ao mesmo tempo (tipo os dois tentando pegar o último ovo da geladeira), pode dar confusão. É exatamente isso que o Exercício 6 de hoje mostra na prática.
+          </P>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginTop: 16, marginBottom: 4 }}>
+            <div style={{ background: theme.blueprint, borderRadius: 8, padding: "14px 16px" }}>
+              <div style={{ fontFamily: fontDisplay, fontWeight: 600, fontSize: 13, color: theme.copper, marginBottom: 6 }}>Processo (a casa)</div>
+              <P dark style={{ fontSize: 13.5, marginBottom: 0 }}>Memória isolada — nenhum outro processo enxerga ou mexe nela sem permissão especial.</P>
+            </div>
+            <div style={{ background: theme.blueprint, borderRadius: 8, padding: "14px 16px" }}>
+              <div style={{ fontFamily: fontDisplay, fontWeight: 600, fontSize: 13, color: theme.teal, marginBottom: 6 }}>Thread (o morador)</div>
+              <P dark style={{ fontSize: 13.5, marginBottom: 0 }}>Compartilha a memória com as outras threads do mesmo processo — mais rápido de comunicar, mas mais arriscado.</P>
+            </div>
+          </div>
+          <P dark style={{ fontSize: 15, marginTop: 12, marginBottom: 0 }}>
+            Foi exatamente esse compartilhamento que usamos no Exercício 2 da Aula 1, quando criamos uma <Term>thread</Term> pra rodar o cálculo pesado "ao mesmo tempo" que o resto do código lia a GPU — as duas partes do código, rodando em threads diferentes, conseguiam "ver" as mesmas variáveis.
           </P>
         </div>
+      </Section>
+
+      {/* CONCLUSÃO */}
+      <Section dark>
+        <Eyebrow>Fechando o quadro</Eyebrow>
+        <H2 dark>Onde tudo isso se encontra</H2>
+        <P dark>
+          Hoje vimos 4 assuntos que, à primeira vista, parecem soltos: SIMD/MIMD, RISC/CISC, Pipeline, e Processos/Threads. Eles não são temas separados por acaso — são <strong style={{ color: "#F4F1E8" }}>4 respostas diferentes pra mesma pergunta</strong> ("como fazer mais de uma coisa ao mesmo tempo?"), cada uma respondendo em um nível diferente do computador. Olha só como eles se encaixam, do nível mais interno do chip até o nível mais visível pra você, usuário:
+        </P>
+
+        <div style={{ display: "grid", gap: 10, marginTop: 20 }}>
+          {[
+            { n: "1", label: "Dentro de 1 núcleo, ao longo do tempo", desc: "Pipeline — sobrepõe as etapas de várias instruções, uma logo atrás da outra, pra não deixar nenhuma parte da CPU parada.", color: theme.copper },
+            { n: "2", label: "Dentro de 1 núcleo, no mesmo instante", desc: "SIMD — uma única instrução processa vários dados ao mesmo tempo (as instruções AVX da CPU, ou cada núcleo CUDA da GPU).", color: theme.teal },
+            { n: "3", label: "Entre vários núcleos", desc: "MIMD — cada núcleo roda seu próprio programa, de forma totalmente independente dos outros.", color: theme.copper },
+            { n: "4", label: "Acima do hardware, gerenciado pelo sistema operacional", desc: "Processos e Threads — dezenas de programas 'dividindo' os poucos núcleos disponíveis, trocando de vez em quando (milissegundos) pra dar a ilusão de simultaneidade total.", color: theme.teal },
+          ].map((item) => (
+            <div key={item.n} style={{ display: "flex", gap: 16, background: "#101E38", borderRadius: 10, padding: "16px 18px" }}>
+              <div style={{
+                width: 30, height: 30, borderRadius: "50%", background: item.color + "22", border: `1.5px solid ${item.color}`,
+                display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                fontFamily: fontDisplay, fontWeight: 700, fontSize: 13, color: item.color
+              }}>{item.n}</div>
+              <div>
+                <div style={{ fontFamily: fontDisplay, fontWeight: 600, fontSize: 14.5, color: "#F4F1E8", marginBottom: 4 }}>{item.label}</div>
+                <P dark style={{ fontSize: 14, marginBottom: 0 }}>{item.desc}</P>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <P dark style={{ marginTop: 24 }}>
+          E o RISC x CISC? Ele não é um 5º nível — é a decisão de <em>design</em> que torna os níveis 1 e 2 possíveis (ou difíceis). Instruções RISC, simples e de tamanho fixo, são o que permite um pipeline fluir sem travar (nível 1) e o que permite replicar milhares de núcleos simples numa GPU (nível 2). É por isso que a GPU — pensada pra SIMD em escala gigante — se aproxima tanto do RISC, e a CPU tradicional — pensada pra fazer poucas coisas complexas bem feitas — historicamente puxou mais pro CISC.
+        </P>
+        <P dark style={{ marginBottom: 0 }}>
+          No fim, a pergunta que abriu a Aula 1 ("por que treinar IA sem GPU leva dias?") e a pergunta que abriu a Aula 2 ("por que a GPU foi desenhada assim?") são a mesma pergunta, vista de dois ângulos — e agora você tem o vocabulário técnico completo pra responder ela em qualquer um dos 4 níveis.
+        </P>
       </Section>
 
       {/* RESUMO */}

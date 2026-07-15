@@ -94,39 +94,48 @@ function GameShell({ title, color, onExit, children }) {
   );
 }
 
+/** Caixa de explicação padrão — usada em TODOS os jogos, acertando ou errando */
+function WhyBox({ children }) {
+  return (
+    <div style={{ background: theme.amberBg, borderRadius: 8, padding: "12px 14px", marginTop: 14, marginBottom: 14 }}>
+      <span style={{ fontFamily: fontBody, fontSize: 14, color: theme.amberDark, lineHeight: 1.6 }}>{children}</span>
+    </div>
+  );
+}
+
 /* ============================================================ */
 /* GAME 1 — SIMD OU MIMD?                                       */
 /* ============================================================ */
 
 const SIMD_T1 = [
-  { t: "Aplicar o mesmo filtro em todos os pixels de uma imagem, ao mesmo tempo", a: "simd" },
-  { t: "Um núcleo compilando código enquanto outro toca música", a: "mimd" },
-  { t: "Multiplicar cada elemento de uma matriz gigante pela mesma constante", a: "simd" },
-  { t: "Cada thread do seu notebook rodando uma tarefa completamente diferente", a: "mimd" },
-  { t: "Somar dois vetores de números, elemento por elemento, tudo simultâneo", a: "simd" },
-  { t: "8 núcleos de CPU, cada um rodando um programa diferente", a: "mimd" },
-  { t: "GPU aplicando a mesma ativação (ReLU) em milhares de neurônios ao mesmo tempo", a: "simd" },
-  { t: "Um servidor rodando processos de usuários diferentes, cada um fazendo algo distinto", a: "mimd" },
+  { t: "Aplicar o mesmo filtro em todos os pixels de uma imagem, ao mesmo tempo", a: "simd", why: "Mesma operação (o filtro) repetida sobre muitos dados (cada pixel) simultaneamente — a própria definição de SIMD." },
+  { t: "Um núcleo compilando código enquanto outro toca música", a: "mimd", why: "Dois núcleos, cada um seguindo uma instrução completamente diferente, sem nenhuma relação entre si." },
+  { t: "Multiplicar cada elemento de uma matriz gigante pela mesma constante", a: "simd", why: "A instrução (multiplicar por essa constante) é sempre a mesma; só o dado muda a cada elemento." },
+  { t: "Cada thread do seu notebook rodando uma tarefa completamente diferente", a: "mimd", why: "Threads/núcleos independentes, cada um com sua própria instrução — não é a mesma operação repetida." },
+  { t: "Somar dois vetores de números, elemento por elemento, tudo simultâneo", a: "simd", why: "Uma soma, aplicada em massa sobre pares de números diferentes, ao mesmo tempo." },
+  { t: "8 núcleos de CPU, cada um rodando um programa diferente", a: "mimd", why: "Cada núcleo com seu próprio programa (instrução) — o cenário clássico de multitarefa numa CPU." },
+  { t: "GPU aplicando a mesma ativação (ReLU) em milhares de neurônios ao mesmo tempo", a: "simd", why: "Mesma função (ReLU) aplicada a milhares de valores diferentes, tudo simultâneo — SIMD em escala GPU." },
+  { t: "Um servidor rodando processos de usuários diferentes, cada um fazendo algo distinto", a: "mimd", why: "Processos completamente independentes, cada um com sua própria lógica, sem instrução compartilhada." },
 ];
 const SIMD_T2 = [
-  { t: "Instrução AVX da CPU somando 8 números de uma vez", a: "simd" },
-  { t: "Renderizar cada pixel de um frame com o mesmo cálculo de iluminação", a: "simd" },
-  { t: "Um núcleo lidando com rede, outro com disco, outro com cálculo — tarefas diferentes", a: "mimd" },
-  { t: "Aplicar a mesma transformação de cor em todos os frames de um vídeo, em paralelo", a: "simd" },
-  { t: "Sistema operacional escalonando processos diferentes entre os núcleos disponíveis", a: "mimd" },
-  { t: "Multiplicação de matrizes numa rede neural (cada núcleo faz a mesma operação sobre dados diferentes)", a: "simd" },
-  { t: "Um cluster de servidores, cada máquina rodando uma parte diferente de um sistema", a: "mimd" },
-  { t: "Comprimir um arquivo aplicando o mesmo algoritmo em blocos diferentes, paralelamente", a: "simd" },
+  { t: "Instrução AVX da CPU somando 8 números de uma vez", a: "simd", why: "AVX é literalmente SIMD dentro da própria CPU: 1 instrução, vários números somados ao mesmo tempo." },
+  { t: "Renderizar cada pixel de um frame com o mesmo cálculo de iluminação", a: "simd", why: "O cálculo de iluminação é o mesmo pra cada pixel — só o dado (posição/cor) muda." },
+  { t: "Um núcleo lidando com rede, outro com disco, outro com cálculo — tarefas diferentes", a: "mimd", why: "Três tarefas de natureza diferente, cada núcleo seguindo sua própria instrução." },
+  { t: "Aplicar a mesma transformação de cor em todos os frames de um vídeo, em paralelo", a: "simd", why: "Mesma transformação repetida sobre muitos frames — dados diferentes, instrução idêntica." },
+  { t: "Sistema operacional escalonando processos diferentes entre os núcleos disponíveis", a: "mimd", why: "Cada processo escalonado é um programa distinto, rodando sua própria sequência de instruções." },
+  { t: "Multiplicação de matrizes numa rede neural (cada núcleo faz a mesma operação sobre dados diferentes)", a: "simd", why: "É a própria definição do enunciado: mesma operação, dados diferentes, ao mesmo tempo." },
+  { t: "Um cluster de servidores, cada máquina rodando uma parte diferente de um sistema", a: "mimd", why: "Máquinas com papéis diferentes (ex: uma cuida do banco de dados, outra do site) — instruções distintas." },
+  { t: "Comprimir um arquivo aplicando o mesmo algoritmo em blocos diferentes, paralelamente", a: "simd", why: "O algoritmo de compressão é a 'instrução' repetida sobre blocos diferentes de dado." },
 ];
 const SIMD_T3 = [
-  { t: "Uma GPU dividida em dois grupos de núcleos, cada grupo rodando uma tarefa diferente ao mesmo tempo", a: "mimd" },
-  { t: "4 núcleos de CPU rodando, todos ao mesmo tempo, a mesma instrução de criptografia sobre pedaços diferentes de um arquivo", a: "simd" },
-  { t: "Um supercomputador vetorial antigo (Cray-1) aplicando uma única instrução sobre um vetor inteiro de números", a: "simd" },
-  { t: "Um chip com 200 núcleos simples, mas metade seguindo um programa e a outra metade seguindo outro", a: "mimd" },
-  { t: "As instruções AVX de uma CPU moderna, somando 8 números numa única operação", a: "simd" },
-  { t: "Um data center com centenas de servidores, cada um processando requisições diferentes de usuários", a: "mimd" },
-  { t: "Aplicar o mesmo ajuste de brilho em cada pixel de uma foto, todos ao mesmo tempo", a: "simd" },
-  { t: "Um time de desenvolvedores, cada um trabalhando numa parte diferente do mesmo projeto, em paralelo", a: "mimd" },
+  { t: "Uma GPU dividida em dois grupos de núcleos, cada grupo rodando uma tarefa diferente ao mesmo tempo", a: "mimd", why: "Mesmo sendo GPU, se os dois grupos seguem instruções diferentes entre si, isso é MIMD — GPU não é SIMD por natureza, é por como costuma ser usada." },
+  { t: "4 núcleos de CPU rodando, todos ao mesmo tempo, a mesma instrução de criptografia sobre pedaços diferentes de um arquivo", a: "simd", why: "Mesmo sendo CPU, se todos os núcleos executam a MESMA instrução sobre dados diferentes, isso é SIMD — não é exclusividade de GPU." },
+  { t: "Um supercomputador vetorial antigo (Cray-1) aplicando uma única instrução sobre um vetor inteiro de números", a: "simd", why: "É a própria origem histórica do termo 'processador vetorial' — 1 instrução, um vetor inteiro de dados." },
+  { t: "Um chip com 200 núcleos simples, mas metade seguindo um programa e a outra metade seguindo outro", a: "mimd", why: "Muitos núcleos não significa SIMD automaticamente — o que importa é se a instrução é a mesma pra todos, e aqui não é." },
+  { t: "As instruções AVX de uma CPU moderna, somando 8 números numa única operação", a: "simd", why: "De novo: AVX é SIMD dentro da CPU, reforçando que essa técnica não é exclusiva de GPU." },
+  { t: "Um data center com centenas de servidores, cada um processando requisições diferentes de usuários", a: "mimd", why: "Requisições diferentes = instruções/dados diferentes por servidor, sem 'mesma instrução' coordenada." },
+  { t: "Aplicar o mesmo ajuste de brilho em cada pixel de uma foto, todos ao mesmo tempo", a: "simd", why: "O ajuste é sempre a mesma operação matemática — só o valor do pixel muda." },
+  { t: "Um time de desenvolvedores, cada um trabalhando numa parte diferente do mesmo projeto, em paralelo", a: "mimd", why: "Analogia fora do hardware: cada dev segue sua própria 'instrução' (tarefa) sobre seu próprio 'dado' (parte do código) — paralelismo do tipo MIMD." },
 ];
 
 function SimdOuMimd({ onFinish }) {
@@ -134,15 +143,16 @@ function SimdOuMimd({ onFinish }) {
   const [idx, setIdx] = useState(0);
   const [score, setScore] = useState(0);
   const [streak, setStreak] = useState(0);
-  const [feedback, setFeedback] = useState(null);
+  const [picked, setPicked] = useState(null);
 
   function answer(choice) {
+    if (picked) return;
+    setPicked(choice);
     const correct = deck[idx].a === choice;
-    setFeedback(correct ? "right" : "wrong");
     if (correct) { setScore((s) => s + 1); setStreak((s) => s + 1); }
     else setStreak(0);
-    setTimeout(() => { setFeedback(null); setIdx((i) => i + 1); }, 550);
   }
+  function next() { setPicked(null); setIdx((i) => i + 1); }
 
   if (idx >= deck.length) {
     const xp = Math.round((score / deck.length) * 30);
@@ -156,6 +166,7 @@ function SimdOuMimd({ onFinish }) {
 
   const task = deck[idx];
   const tier = idx < 8 ? 1 : idx < 16 ? 2 : 3;
+  const isCorrect = picked === task.a;
   return (
     <GameShell title="SIMD ou MIMD?" color={theme.teal} onExit={() => onFinish(0)}>
       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
@@ -164,18 +175,22 @@ function SimdOuMimd({ onFinish }) {
       </div>
       <ProgressBar value={idx} max={deck.length} color={theme.teal} />
       <div style={{
-        marginTop: 30, marginBottom: 30, minHeight: 90, display: "flex", alignItems: "center", justifyContent: "center",
-        background: feedback === "right" ? theme.tealBg : feedback === "wrong" ? theme.redBg : "#101E38",
+        marginTop: 30, marginBottom: picked ? 14 : 30, minHeight: 90, display: "flex", alignItems: "center", justifyContent: "center",
+        background: picked ? (isCorrect ? theme.tealBg : theme.redBg) : "#101E38",
         borderRadius: 12, padding: 24
       }}>
-        <span style={{ fontFamily: fontDisplay, fontWeight: 600, fontSize: 18, textAlign: "center", color: feedback ? theme.ink : "#F4F1E8" }}>
-          {feedback === "right" ? "Certo!" : feedback === "wrong" ? `Era ${task.a.toUpperCase()}` : task.t}
+        <span style={{ fontFamily: fontDisplay, fontWeight: 600, fontSize: 18, textAlign: "center", color: picked ? theme.ink : "#F4F1E8" }}>
+          {picked ? (isCorrect ? "Certo!" : `Era ${task.a.toUpperCase()}`) : task.t}
         </span>
       </div>
-      <div style={{ display: "flex", gap: 14 }}>
-        <Btn onClick={() => answer("simd")} disabled={!!feedback} color={theme.teal} style={{ flex: 1, padding: "18px 0" }}>SIMD</Btn>
-        <Btn onClick={() => answer("mimd")} disabled={!!feedback} color={theme.copper} style={{ flex: 1, padding: "18px 0" }}>MIMD</Btn>
-      </div>
+      {picked && <WhyBox>{task.why}</WhyBox>}
+      {!picked && (
+        <div style={{ display: "flex", gap: 14 }}>
+          <Btn onClick={() => answer("simd")} color={theme.teal} style={{ flex: 1, padding: "18px 0" }}>SIMD</Btn>
+          <Btn onClick={() => answer("mimd")} color={theme.copper} style={{ flex: 1, padding: "18px 0" }}>MIMD</Btn>
+        </div>
+      )}
+      {picked && <Btn onClick={next}>{idx + 1 >= deck.length ? "Ver resultado" : "Próxima"}</Btn>}
     </GameShell>
   );
 }
@@ -185,34 +200,34 @@ function SimdOuMimd({ onFinish }) {
 /* ============================================================ */
 
 const RC_T1 = [
-  { t: "Intel Core i9 (usado na maioria dos PCs Windows)", a: "cisc" },
-  { t: "Apple M3 (Macs recentes)", a: "risc" },
-  { t: "ARM Cortex-A78 (celulares Android)", a: "risc" },
-  { t: "AMD Ryzen 9", a: "cisc" },
-  { t: "Raspberry Pi (processador ARM)", a: "risc" },
-  { t: "Processador Intel Pentium (anos 90/2000)", a: "cisc" },
-  { t: "RISC-V (arquitetura aberta, crescendo em popularidade)", a: "risc" },
-  { t: "Snapdragon (processador de celulares Qualcomm, baseado em ARM)", a: "risc" },
+  { t: "Intel Core i9 (usado na maioria dos PCs Windows)", a: "cisc", why: "Segue a família x86/x86-64, a linhagem CISC clássica da Intel." },
+  { t: "Apple M3 (Macs recentes)", a: "risc", why: "Baseado em ARM — a Apple migrou de Intel (CISC) pra chips próprios RISC a partir de 2020." },
+  { t: "ARM Cortex-A78 (celulares Android)", a: "risc", why: "ARM é, por definição, uma arquitetura RISC — usada na maioria dos celulares do mundo." },
+  { t: "AMD Ryzen 9", a: "cisc", why: "Segue a arquitetura x86-64, junto com a Intel — concorrentes dentro do mesmo mundo CISC." },
+  { t: "Raspberry Pi (processador ARM)", a: "risc", why: "Usa processadores ARM, a mesma família RISC dos celulares." },
+  { t: "Processador Intel Pentium (anos 90/2000)", a: "cisc", why: "Uma das gerações mais famosas da linhagem x86 CISC da Intel." },
+  { t: "RISC-V (arquitetura aberta, crescendo em popularidade)", a: "risc", why: "O próprio nome já entrega — arquitetura RISC aberta e gratuita, ganhando espaço rapidamente." },
+  { t: "Snapdragon (processador de celulares Qualcomm, baseado em ARM)", a: "risc", why: "Processadores Qualcomm pra celular são construídos sobre a arquitetura ARM (RISC)." },
 ];
 const RC_T2 = [
-  { t: "Instruções de tamanho fixo, todas com 32 bits", a: "risc" },
-  { t: "Uma única instrução que lê da memória, soma e grava o resultado de volta", a: "cisc" },
-  { t: "Poucas instruções no total, cada uma fazendo uma coisa simples", a: "risc" },
-  { t: "Instruções de tamanho variável, algumas curtas, outras bem longas", a: "cisc" },
-  { t: "Design pensado pra manter o pipeline fluindo sem travar", a: "risc" },
-  { t: "Centenas de instruções diferentes disponíveis, muitas raramente usadas", a: "cisc" },
-  { t: "Precisa de mais instruções pra fazer a mesma tarefa, mas cada uma é rápida", a: "risc" },
-  { t: "Compatibilidade histórica com décadas de software legado motivou manter a complexidade", a: "cisc" },
+  { t: "Instruções de tamanho fixo, todas com 32 bits", a: "risc", why: "Tamanho fixo é a marca registrada do RISC — facilita decodificação e pipeline." },
+  { t: "Uma única instrução que lê da memória, soma e grava o resultado de volta", a: "cisc", why: "Fazer várias operações (ler, somar, gravar) numa instrução só é exatamente o estilo do exemplo ADD [C],[A],[B] que vimos." },
+  { t: "Poucas instruções no total, cada uma fazendo uma coisa simples", a: "risc", why: "'Reduced' no nome RISC significa exatamente isso: um conjunto reduzido e simples de instruções." },
+  { t: "Instruções de tamanho variável, algumas curtas, outras bem longas", a: "cisc", why: "Tamanho variável é consequência direta de ter instruções complexas que fazem coisas diferentes." },
+  { t: "Design pensado pra manter o pipeline fluindo sem travar", a: "risc", why: "Foi um dos motivos históricos que originou o RISC: instruções uniformes = pipeline previsível." },
+  { t: "Centenas de instruções diferentes disponíveis, muitas raramente usadas", a: "cisc", why: "Ter um catálogo gigante de instruções especializadas é característica clássica de CISC (como o x86)." },
+  { t: "Precisa de mais instruções pra fazer a mesma tarefa, mas cada uma é rápida", a: "risc", why: "É o trade-off RISC: mais linhas de código, só que cada uma é simples e veloz de decodificar." },
+  { t: "Compatibilidade histórica com décadas de software legado motivou manter a complexidade", a: "cisc", why: "A Intel manteve compatibilidade com instruções antigas do x86 por décadas — motivo histórico real pra CISC continuar complexo." },
 ];
 const RC_T3 = [
-  { t: "x86 moderno traduzindo instruções complexas em microinstruções simples antes de executar (por fora)", a: "cisc" },
-  { t: "Processador otimizado pra rodar em bateria de celular, priorizando baixo consumo de energia", a: "risc" },
-  { t: "Chip dos anos 1970-80, quando memória era cara e reduzir o tamanho do programa era prioridade", a: "cisc" },
-  { t: "Núcleos CUDA de uma GPU NVIDIA", a: "risc" },
-  { t: "Instrução única capaz de executar sozinha um loop inteiro de cópia de memória", a: "cisc" },
-  { t: "Decodificador de instrução simples o bastante pra replicar centenas de vezes no mesmo chip", a: "risc" },
-  { t: "Arquitetura escolhida pra maximizar duração de bateria e reduzir aquecimento em notebooks", a: "risc" },
-  { t: "Processador cujo fabricante prioriza rodar, sem recompilar, programas escritos há 20 anos", a: "cisc" },
+  { t: "x86 moderno traduzindo instruções complexas em microinstruções simples antes de executar (por fora)", a: "cisc", why: "Por fora continua sendo CISC (o programador ainda escreve instruções x86 complexas) — só o motor interno usa truques parecidos com RISC (veja o Exercício 2, bônus)." },
+  { t: "Processador otimizado pra rodar em bateria de celular, priorizando baixo consumo de energia", a: "risc", why: "Instruções simples gastam menos energia pra decodificar — por isso RISC domina o mundo mobile." },
+  { t: "Chip dos anos 1970-80, quando memória era cara e reduzir o tamanho do programa era prioridade", a: "cisc", why: "Instruções mais complexas 'fazem mais por byte', reduzindo o programa — motivo histórico real do surgimento do CISC." },
+  { t: "Núcleos CUDA de uma GPU NVIDIA", a: "risc", why: "Simples e replicados aos milhares — exatamente a filosofia RISC aplicada em escala massiva." },
+  { t: "Instrução única capaz de executar sozinha um loop inteiro de cópia de memória", a: "cisc", why: "Uma instrução fazendo o trabalho de um loop inteiro é complexidade concentrada numa instrução só — CISC até a raiz." },
+  { t: "Decodificador de instrução simples o bastante pra replicar centenas de vezes no mesmo chip", a: "risc", why: "É exatamente por isso que a GPU consegue ter milhares de núcleos: cada decodificador RISC ocupa pouco espaço." },
+  { t: "Arquitetura escolhida pra maximizar duração de bateria e reduzir aquecimento em notebooks", a: "risc", why: "O mesmo motivo que levou a Apple a trocar de Intel pra chips ARM próprios nos MacBooks." },
+  { t: "Processador cujo fabricante prioriza rodar, sem recompilar, programas escritos há 20 anos", a: "cisc", why: "Compatibilidade retroativa (manter software antigo rodando) é prioridade histórica da linhagem x86/CISC." },
 ];
 
 function RiscOuCisc({ onFinish }) {
@@ -220,15 +235,16 @@ function RiscOuCisc({ onFinish }) {
   const [idx, setIdx] = useState(0);
   const [score, setScore] = useState(0);
   const [streak, setStreak] = useState(0);
-  const [feedback, setFeedback] = useState(null);
+  const [picked, setPicked] = useState(null);
 
   function answer(choice) {
+    if (picked) return;
+    setPicked(choice);
     const correct = deck[idx].a === choice;
-    setFeedback(correct ? "right" : "wrong");
     if (correct) { setScore((s) => s + 1); setStreak((s) => s + 1); }
     else setStreak(0);
-    setTimeout(() => { setFeedback(null); setIdx((i) => i + 1); }, 550);
   }
+  function next() { setPicked(null); setIdx((i) => i + 1); }
 
   if (idx >= deck.length) {
     const xp = Math.round((score / deck.length) * 30);
@@ -242,6 +258,7 @@ function RiscOuCisc({ onFinish }) {
 
   const task = deck[idx];
   const tier = idx < 8 ? 1 : idx < 16 ? 2 : 3;
+  const isCorrect = picked === task.a;
   return (
     <GameShell title="RISC ou CISC?" color={theme.copper} onExit={() => onFinish(0)}>
       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
@@ -250,18 +267,22 @@ function RiscOuCisc({ onFinish }) {
       </div>
       <ProgressBar value={idx} max={deck.length} color={theme.copper} />
       <div style={{
-        marginTop: 30, marginBottom: 30, minHeight: 90, display: "flex", alignItems: "center", justifyContent: "center",
-        background: feedback === "right" ? theme.tealBg : feedback === "wrong" ? theme.redBg : "#101E38",
+        marginTop: 30, marginBottom: picked ? 14 : 30, minHeight: 90, display: "flex", alignItems: "center", justifyContent: "center",
+        background: picked ? (isCorrect ? theme.tealBg : theme.redBg) : "#101E38",
         borderRadius: 12, padding: 24
       }}>
-        <span style={{ fontFamily: fontDisplay, fontWeight: 600, fontSize: 17, textAlign: "center", color: feedback ? theme.ink : "#F4F1E8" }}>
-          {feedback === "right" ? "Certo!" : feedback === "wrong" ? `Era ${task.a.toUpperCase()}` : task.t}
+        <span style={{ fontFamily: fontDisplay, fontWeight: 600, fontSize: 17, textAlign: "center", color: picked ? theme.ink : "#F4F1E8" }}>
+          {picked ? (isCorrect ? "Certo!" : `Era ${task.a.toUpperCase()}`) : task.t}
         </span>
       </div>
-      <div style={{ display: "flex", gap: 14 }}>
-        <Btn onClick={() => answer("risc")} disabled={!!feedback} color={theme.teal} style={{ flex: 1, padding: "18px 0" }}>RISC</Btn>
-        <Btn onClick={() => answer("cisc")} disabled={!!feedback} color={theme.copper} style={{ flex: 1, padding: "18px 0" }}>CISC</Btn>
-      </div>
+      {picked && <WhyBox>{task.why}</WhyBox>}
+      {!picked && (
+        <div style={{ display: "flex", gap: 14 }}>
+          <Btn onClick={() => answer("risc")} color={theme.teal} style={{ flex: 1, padding: "18px 0" }}>RISC</Btn>
+          <Btn onClick={() => answer("cisc")} color={theme.copper} style={{ flex: 1, padding: "18px 0" }}>CISC</Btn>
+        </div>
+      )}
+      {picked && <Btn onClick={next}>{idx + 1 >= deck.length ? "Ver resultado" : "Próxima"}</Btn>}
     </GameShell>
   );
 }
@@ -344,11 +365,9 @@ function PipelineRush({ onFinish }) {
       </div>
       {picked && (
         <div style={{ marginTop: 16 }}>
-          <div style={{ background: theme.amberBg, borderRadius: 8, padding: "12px 14px", marginBottom: 12 }}>
-            <span style={{ fontFamily: fontBody, fontSize: 14, color: theme.amberDark, lineHeight: 1.6 }}>
-              I{n} entra em Busca no ciclo {n}. No ciclo {r.cycle}, isso é a etapa número {r.cycle - n + 1} da instrução — {r.correct === "Ainda não começou" ? "número negativo, ou seja, ela nem começou ainda." : r.correct === "Já terminou" ? "além da 5ª etapa, ou seja, ela já terminou." : `que corresponde a '${r.correct}'.`}
-            </span>
-          </div>
+          <WhyBox>
+            I{n} entra em Busca no ciclo {n}. No ciclo {r.cycle}, isso é a etapa número {r.cycle - n + 1} da instrução — {r.correct === "Ainda não começou" ? "número negativo, ou seja, ela nem começou ainda." : r.correct === "Já terminou" ? "além da 5ª etapa, ou seja, ela já terminou." : `que corresponde a '${r.correct}'.`}
+          </WhyBox>
           <Btn onClick={next}>{idx + 1 >= TOTAL ? "Ver resultado" : "Próxima"}</Btn>
         </div>
       )}
@@ -428,9 +447,7 @@ function DetetiveProcessos({ onFinish }) {
       </div>
       {picked && (
         <div style={{ marginTop: 16 }}>
-          <div style={{ background: theme.amberBg, borderRadius: 8, padding: "12px 14px", marginBottom: 12 }}>
-            <span style={{ fontFamily: fontBody, fontSize: 14, color: theme.amberDark, lineHeight: 1.6 }}>{c.explain}</span>
-          </div>
+          <WhyBox>{c.explain}</WhyBox>
           <Btn onClick={next}>{idx + 1 >= deck.length ? "Ver resultado" : "Próximo caso"}</Btn>
         </div>
       )}
@@ -443,36 +460,36 @@ function DetetiveProcessos({ onFinish }) {
 /* ============================================================ */
 
 const GLOSS2 = [
-  { term: "SIMD", def: "Instrução Única, Múltiplos Dados — a mesma operação aplicada a vários dados ao mesmo tempo." },
-  { term: "MIMD", def: "Múltiplas Instruções, Múltiplos Dados — núcleos totalmente independentes, cada um com sua própria instrução." },
-  { term: "SISD", def: "Instrução Única, Dado Único — um processador simples, sem paralelismo, processando um dado de cada vez." },
-  { term: "MISD", def: "Múltiplas Instruções, Dado Único — raríssimo; várias instruções diferentes processando o mesmo dado." },
-  { term: "Taxonomia de Flynn", def: "Classificação de 1966 que separa processadores em 4 categorias, baseada em quantas instruções e dados eles processam por vez." },
-  { term: "RISC", def: "Reduced Instruction Set Computer — poucas instruções, todas simples e de tamanho fixo." },
-  { term: "CISC", def: "Complex Instruction Set Computer — instruções poderosas, que fazem várias operações de uma vez, de tamanho variável." },
-  { term: "AVX / SSE", def: "Famílias de instruções SIMD dentro de CPUs comuns, que somam ou multiplicam vários números numa única operação." },
-  { term: "Pipeline", def: "Técnica que sobrepõe as etapas de várias instruções ao mesmo tempo, como uma linha de montagem." },
-  { term: "Busca (Fetch)", def: "Primeira etapa do pipeline: buscar a instrução na memória." },
-  { term: "Decodifica", def: "Etapa do pipeline em que a CPU interpreta o que a instrução está pedindo." },
-  { term: "Executa", def: "Etapa do pipeline em que a ALU realmente faz o cálculo." },
-  { term: "Memória (etapa)", def: "Etapa do pipeline em que a instrução acessa a memória, se precisar." },
-  { term: "Escreve (Write-back)", def: "Última etapa do pipeline: o resultado é gravado de volta." },
-  { term: "Micro-ops", def: "Microinstruções simples, parecidas com RISC, em que CPUs CISC modernas traduzem cada instrução complexa antes de executar." },
-  { term: "Processo", def: "Um programa em execução, com sua própria fatia de memória." },
-  { term: "Thread", def: "Uma linha de execução dentro de um processo, compartilhando memória com as outras threads do mesmo processo." },
-  { term: "Estado Novo", def: "O processo acabou de ser criado; o sistema ainda está preparando o espaço de memória pra ele." },
-  { term: "Estado Pronto", def: "O processo está pronto pra rodar, esperando sua vez de usar um núcleo." },
-  { term: "Estado Executando", def: "O processo está, nesse instante, usando um núcleo de verdade." },
-  { term: "Estado Bloqueado", def: "O processo parou porque está esperando algo externo, como uma resposta de disco ou rede." },
-  { term: "Condição de corrida", def: "Quando duas threads tentam ler e escrever a mesma variável ao mesmo tempo, e uma acaba 'pisando' no resultado da outra." },
-  { term: "PID", def: "Número que identifica um processo específico rodando no sistema." },
-  { term: "PPID", def: "O PID do processo 'pai' que criou esse processo." },
-  { term: "Processo órfão", def: "Um processo cujo pai foi encerrado, e que passou a ser adotado pelo processo init (PID 1)." },
-  { term: "Processo zumbi", def: "Um processo que já terminou, mas cujo status ainda não foi 'coletado' pelo processo pai." },
-  { term: "Escalonador", def: "A parte do sistema operacional que decide qual processo pronto vai usar o núcleo a seguir." },
-  { term: "ARM", def: "Uma arquitetura RISC, usada em celulares e nos chips Apple Silicon (M1, M2, M3)." },
-  { term: "x86", def: "Uma arquitetura CISC, usada pela maioria dos PCs e servidores tradicionais." },
-  { term: "Núcleo CUDA", def: "O núcleo de processamento de uma GPU NVIDIA — simples e numeroso, seguindo uma filosofia próxima do RISC." },
+  { term: "SIMD", def: "Instrução Única, Múltiplos Dados — a mesma operação aplicada a vários dados ao mesmo tempo.", note: "Base de tudo que vimos sobre a GPU hoje — e da seção que abriu a aula." },
+  { term: "MIMD", def: "Múltiplas Instruções, Múltiplos Dados — núcleos totalmente independentes, cada um com sua própria instrução.", note: "A lógica por trás de qualquer CPU multi-núcleo moderna." },
+  { term: "SISD", def: "Instrução Única, Dado Único — um processador simples, sem paralelismo, processando um dado de cada vez.", note: "O caso mais simples da Taxonomia de Flynn — sem paralelismo nenhum." },
+  { term: "MISD", def: "Múltiplas Instruções, Dado Único — raríssimo; várias instruções diferentes processando o mesmo dado.", note: "O mais raro dos 4 — praticamente só aparece em sistemas de tolerância a falha." },
+  { term: "Taxonomia de Flynn", def: "Classificação de 1966 que separa processadores em 4 categorias, baseada em quantas instruções e dados eles processam por vez.", note: "O ponto de partida da aula: a classificação que organiza tudo isso." },
+  { term: "RISC", def: "Reduced Instruction Set Computer — poucas instruções, todas simples e de tamanho fixo.", note: "A filosofia por trás do ARM, da Apple Silicon, e dos núcleos CUDA." },
+  { term: "CISC", def: "Complex Instruction Set Computer — instruções poderosas, que fazem várias operações de uma vez, de tamanho variável.", note: "A filosofia por trás do x86/x86-64 — Intel e AMD." },
+  { term: "AVX / SSE", def: "Famílias de instruções SIMD dentro de CPUs comuns, que somam ou multiplicam vários números numa única operação.", note: "A prova de que SIMD também mora dentro da CPU comum, não só na GPU." },
+  { term: "Pipeline", def: "Técnica que sobrepõe as etapas de várias instruções ao mesmo tempo, como uma linha de montagem.", note: "A técnica que comparamos com a linha de montagem da Ford." },
+  { term: "Busca (Fetch)", def: "Primeira etapa do pipeline: buscar a instrução na memória.", note: "A primeira das 5 etapas do pipeline." },
+  { term: "Decodifica", def: "Etapa do pipeline em que a CPU interpreta o que a instrução está pedindo.", note: "A segunda etapa — interpretar o que a instrução pede." },
+  { term: "Executa", def: "Etapa do pipeline em que a ALU realmente faz o cálculo.", note: "A etapa onde a ALU (lembra da Aula 1?) realmente calcula." },
+  { term: "Memória (etapa)", def: "Etapa do pipeline em que a instrução acessa a memória, se precisar.", note: "A quarta etapa, quando a instrução precisa ler ou escrever dados." },
+  { term: "Escreve (Write-back)", def: "Última etapa do pipeline: o resultado é gravado de volta.", note: "A última etapa — o resultado final volta pro registrador." },
+  { term: "Micro-ops", def: "Microinstruções simples, parecidas com RISC, em que CPUs CISC modernas traduzem cada instrução complexa antes de executar.", note: "A reviravolta do Exercício 2: como CISC vira RISC 'por dentro'." },
+  { term: "Processo", def: "Um programa em execução, com sua própria fatia de memória.", note: "A unidade básica de toda a última seção da aula." },
+  { term: "Thread", def: "Uma linha de execução dentro de um processo, compartilhando memória com as outras threads do mesmo processo.", note: "A analogia da casa e dos moradores compartilhando a geladeira." },
+  { term: "Estado Novo", def: "O processo acabou de ser criado; o sistema ainda está preparando o espaço de memória pra ele.", note: "O primeiro estado no diagrama de ciclo de vida de um processo." },
+  { term: "Estado Pronto", def: "O processo está pronto pra rodar, esperando sua vez de usar um núcleo.", note: "Onde fica a 'fila' de processos esperando vez de usar um núcleo." },
+  { term: "Estado Executando", def: "O processo está, nesse instante, usando um núcleo de verdade.", note: "O único estado em que o processo está de fato usando um núcleo." },
+  { term: "Estado Bloqueado", def: "O processo parou porque está esperando algo externo, como uma resposta de disco ou rede.", note: "Quando o processo libera o núcleo pra esperar algo externo." },
+  { term: "Condição de corrida", def: "Quando duas threads tentam ler e escrever a mesma variável ao mesmo tempo, e uma acaba 'pisando' no resultado da outra.", note: "O problema que o Exercício 6 mostrou na prática, com o contador que nunca batia certo." },
+  { term: "PID", def: "Número que identifica um processo específico rodando no sistema.", note: "Já tinha aparecido no nvidia-smi da Aula 1 — hoje vimos ele pelo lado do ps aux." },
+  { term: "PPID", def: "O PID do processo 'pai' que criou esse processo.", note: "Importante pro conceito de processo órfão." },
+  { term: "Processo órfão", def: "Um processo cujo pai foi encerrado, e que passou a ser adotado pelo processo init (PID 1).", note: "Quando o processo pai morre antes do filho, e o init (PID 1) adota ele." },
+  { term: "Processo zumbi", def: "Um processo que já terminou, mas cujo status ainda não foi 'coletado' pelo processo pai.", note: "Terminou, mas ainda ocupa uma vaguinha na tabela até o pai confirmar." },
+  { term: "Escalonador", def: "A parte do sistema operacional que decide qual processo pronto vai usar o núcleo a seguir.", note: "A parte do sistema operacional que decide quem usa o núcleo agora." },
+  { term: "ARM", def: "Uma arquitetura RISC, usada em celulares e nos chips Apple Silicon (M1, M2, M3).", note: "A arquitetura por trás dos celulares e dos Macs mais recentes." },
+  { term: "x86", def: "Uma arquitetura CISC, usada pela maioria dos PCs e servidores tradicionais.", note: "A arquitetura por trás da maioria dos PCs e servidores tradicionais." },
+  { term: "Núcleo CUDA", def: "O núcleo de processamento de uma GPU NVIDIA — simples e numeroso, seguindo uma filosofia próxima do RISC.", note: "O 'aluno do 6º ano' da analogia da Aula 1 — agora com nome técnico: RISC." },
 ];
 
 function GlossarioBlitz2({ onFinish }) {
@@ -492,8 +509,8 @@ function GlossarioBlitz2({ onFinish }) {
     if (picked) return;
     setPicked(opt);
     if (opt === deck[idx].def) setScore((s) => s + 1);
-    setTimeout(() => { setPicked(null); setIdx((i) => i + 1); }, 650);
   }
+  function next() { setPicked(null); setIdx((i) => i + 1); }
 
   if (idx >= deck.length) {
     const xp = Math.round((score / deck.length) * 35);
@@ -506,6 +523,7 @@ function GlossarioBlitz2({ onFinish }) {
   }
 
   const q = deck[idx];
+  const isCorrect = picked === q.def;
   return (
     <GameShell title="Glossário Blitz — Aula 2" color={theme.teal} onExit={() => onFinish(0)}>
       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
@@ -518,19 +536,25 @@ function GlossarioBlitz2({ onFinish }) {
       </div>
       <div style={{ display: "grid", gap: 10 }}>
         {options.map((opt) => {
-          const isCorrect = opt === q.def;
-          const show = picked && (opt === picked || isCorrect);
+          const isCorrectOpt = opt === q.def;
+          const show = picked && (opt === picked || isCorrectOpt);
           return (
             <button key={opt} onClick={() => choose(opt)} disabled={!!picked} style={{
               textAlign: "left", padding: "12px 16px", borderRadius: 8, cursor: picked ? "default" : "pointer",
               fontFamily: fontBody, fontSize: 14,
-              background: show ? (isCorrect ? theme.tealBg : theme.redBg) : "#101E38",
-              border: `1px solid ${show ? (isCorrect ? theme.teal : theme.red) : theme.blueprintLine}`,
+              background: show ? (isCorrectOpt ? theme.tealBg : theme.redBg) : "#101E38",
+              border: `1px solid ${show ? (isCorrectOpt ? theme.teal : theme.red) : theme.blueprintLine}`,
               color: show ? theme.ink : theme.textOnDark,
             }}>{opt}</button>
           );
         })}
       </div>
+      {picked && (
+        <div style={{ marginTop: 16 }}>
+          <WhyBox>{isCorrect ? q.note : `A definição certa é a destacada acima. ${q.note}`}</WhyBox>
+          <Btn onClick={next}>{idx + 1 >= deck.length ? "Ver resultado" : "Próxima"}</Btn>
+        </div>
+      )}
     </GameShell>
   );
 }
@@ -561,8 +585,8 @@ function TopNav({ active }) {
 }
 
 const GAMES = [
-  { id: "simdmimd", title: "SIMD ou MIMD?", desc: "24 cenários em 3 níveis de dificuldade — dos óbvios aos bem sutis.", time: "~8 min", color: theme.teal, icon: Workflow, comp: SimdOuMimd },
-  { id: "risccisc", title: "RISC ou CISC?", desc: "24 itens: processadores reais e características de design.", time: "~8 min", color: theme.copper, icon: GitCommit, comp: RiscOuCisc },
+  { id: "simdmimd", title: "SIMD ou MIMD?", desc: "24 cenários em 3 níveis de dificuldade — dos óbvios aos bem sutis.", time: "~9 min", color: theme.teal, icon: Workflow, comp: SimdOuMimd },
+  { id: "risccisc", title: "RISC ou CISC?", desc: "24 itens: processadores reais e características de design.", time: "~9 min", color: theme.copper, icon: GitCommit, comp: RiscOuCisc },
   { id: "pipeline", title: "Pipeline Rush", desc: "Calcule em qual estágio uma instrução está, ciclo a ciclo.", time: "~9 min", color: theme.copper, icon: Layers, comp: PipelineRush },
   { id: "detetiveproc", title: "Detetive de Processos", desc: "16 casos investigativos com ps aux e top — estados, zumbis, órfãos.", time: "~12 min", color: theme.teal, icon: Search, comp: DetetiveProcessos },
   { id: "glossario2", title: "Glossário Blitz — Aula 2", desc: "30 termos novos: SIMD, RISC, pipeline, processos e mais.", time: "~12 min", color: theme.amber, icon: Sparkles, comp: GlossarioBlitz2 },
@@ -607,7 +631,7 @@ export default function GpuGame2() {
           </div>
           <h1 style={{ fontFamily: fontDisplay, fontWeight: 700, fontSize: 34, color: "#F4F1E8", marginBottom: 10 }}>GPU Game 2</h1>
           <p style={{ fontFamily: fontBody, fontSize: 16, color: theme.textOnDark, maxWidth: 580, marginBottom: 20 }}>
-            5 minigames pra fixar SIMD, MIMD, RISC, CISC, Pipeline e Processos. Cerca de 45-50 minutos de jogo, no total.
+            5 minigames pra fixar SIMD, MIMD, RISC, CISC, Pipeline e Processos. Toda resposta — certa ou errada — mostra o porquê. Cerca de 50 minutos de jogo, no total.
           </p>
           <div style={{ display: "inline-flex", alignItems: "center", gap: 10, background: "#101E38", padding: "10px 18px", borderRadius: 8 }}>
             <Trophy size={16} color={theme.amber} />
