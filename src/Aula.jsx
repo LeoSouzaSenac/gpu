@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { api } from "./lib/api";
 import {
   Cpu, Terminal, PlayCircle, ChevronDown, Check,
   Info, ArrowRight, FolderOpen, Settings2
@@ -501,6 +502,7 @@ function Exercise({ n, title, intro, code, questions, tip, defaultOpen, walkthro
 /* ---------- Nav ---------- */
 
 function TopNav({ active }) {
+  const loggedIn = api.isLoggedIn();
   return (
     <div style={{
       position: "sticky", top: 0, zIndex: 20, background: theme.ink,
@@ -517,6 +519,10 @@ function TopNav({ active }) {
         padding: "16px 18px", color: active === "aula2" ? theme.amber : theme.textOnDark,
         borderBottom: active === "aula2" ? `2px solid ${theme.amber}` : "2px solid transparent"
       }}>Aula 2</a>
+      <a href={loggedIn ? "#painel" : "#login"} style={{
+        marginLeft: "auto", fontFamily: fontMono, fontSize: 12, textDecoration: "none",
+        padding: "16px 18px", color: theme.textOnDark
+      }}>{loggedIn ? "Minha pontuação" : "Entrar"}</a>
     </div>
   );
 }

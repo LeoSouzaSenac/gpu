@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { ChevronDown, Check, Info, ArrowRight } from "lucide-react";
+import { api } from "./lib/api";
 
 const theme = {
   ink: "#101826",
@@ -332,6 +333,7 @@ function Exercise({ n, title, intro, code, questions, tip, defaultOpen, walkthro
 /* ---------- Nav ---------- */
 
 function TopNav({ active }) {
+  const loggedIn = api.isLoggedIn();
   return (
     <div style={{
       position: "sticky", top: 0, zIndex: 20, background: theme.ink,
@@ -348,6 +350,10 @@ function TopNav({ active }) {
         padding: "16px 18px", color: active === "aula2" ? theme.amber : theme.textOnDark,
         borderBottom: active === "aula2" ? `2px solid ${theme.amber}` : "2px solid transparent"
       }}>Aula 2</a>
+      <a href={loggedIn ? "#painel" : "#login"} style={{
+        marginLeft: "auto", fontFamily: fontMono, fontSize: 12, textDecoration: "none",
+        padding: "16px 18px", color: theme.textOnDark
+      }}>{loggedIn ? "Minha pontuação" : "Entrar"}</a>
     </div>
   );
 }
@@ -653,17 +659,63 @@ export default function Aula2() {
           <P dark style={{ fontSize: 15 }}>
             Cada pessoa (thread) pode estar fazendo uma tarefa diferente ao mesmo tempo — uma lavando louça, outra assistindo TV — mas se as duas tentarem mexer na mesma coisa ao mesmo tempo (tipo os dois tentando pegar o último ovo da geladeira), pode dar confusão. É exatamente isso que o Exercício 6 de hoje mostra na prática.
           </P>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginTop: 16, marginBottom: 4 }}>
-            <div style={{ background: theme.blueprint, borderRadius: 8, padding: "14px 16px" }}>
-              <div style={{ fontFamily: fontDisplay, fontWeight: 600, fontSize: 13, color: theme.copper, marginBottom: 6 }}>Processo (a casa)</div>
-              <P dark style={{ fontSize: 13.5, marginBottom: 0 }}>Memória isolada — nenhum outro processo enxerga ou mexe nela sem permissão especial.</P>
-            </div>
-            <div style={{ background: theme.blueprint, borderRadius: 8, padding: "14px 16px" }}>
-              <div style={{ fontFamily: fontDisplay, fontWeight: 600, fontSize: 13, color: theme.teal, marginBottom: 6 }}>Thread (o morador)</div>
-              <P dark style={{ fontSize: 13.5, marginBottom: 0 }}>Compartilha a memória com as outras threads do mesmo processo — mais rápido de comunicar, mas mais arriscado.</P>
+
+          <div style={{ fontFamily: fontDisplay, fontWeight: 600, fontSize: 13.5, color: "#F4F1E8", marginTop: 22, marginBottom: 10 }}>Exemplo 1 — o Chrome</div>
+          <P dark style={{ fontSize: 14.5 }}>
+            Quando você abre o Chrome, o sistema cria um processo pra ele (na verdade vários, mas vamos simplificar pra um só). Dentro desse processo, várias threads trabalham ao mesmo tempo:
+          </P>
+          <CodeBlock code={`Chrome (processo)
+├── Thread da interface gráfica
+├── Thread que desenha a página
+├── Thread que baixa imagens
+├── Thread que executa JavaScript
+└── Thread que toca áudio`} />
+          <P dark style={{ fontSize: 14, marginTop: 10, marginBottom: 0 }}>
+            Todas essas threads pertencem ao mesmo programa e compartilham a mesma memória — é por isso que, por exemplo, o JavaScript da página consegue "avisar" a thread de interface pra atualizar algo na tela, quase instantaneamente.
+          </P>
+
+          <div style={{ fontFamily: fontDisplay, fontWeight: 600, fontSize: 13.5, color: "#F4F1E8", marginTop: 22, marginBottom: 10 }}>Exemplo 2 — seu próprio código em Python</div>
+          <P dark style={{ fontSize: 14.5 }}>Com uma thread só, o programa faz uma coisa de cada vez, em fila:</P>
+          <CodeBlock code={`print("Começou")
+while True:
+    print("Calculando...")`} />
+          <P dark style={{ fontSize: 14, marginTop: 8 }}>Calcula → calcula → calcula... nada mais roda enquanto isso não termina.</P>
+          <P dark style={{ fontSize: 14.5, marginTop: 14 }}>Com 3 threads, três tarefas diferentes podem acontecer ao mesmo tempo (ou serem alternadas tão rápido pelo sistema operacional que parece simultâneo):</P>
+          <CodeBlock code={`Thread 1: calcula a IA
+Thread 2: atualiza a interface
+Thread 3: salva o arquivo`} />
+          <P dark style={{ fontSize: 14, marginTop: 8, marginBottom: 0 }}>
+            Foi exatamente essa ideia que usamos no Exercício 2 da Aula 1: uma thread rodando o cálculo pesado, enquanto a thread principal do código seguia tirando leituras do <Term>nvidia-smi</Term>.
+          </P>
+
+          <div style={{ fontFamily: fontDisplay, fontWeight: 600, fontSize: 13.5, color: "#F4F1E8", marginTop: 22, marginBottom: 10 }}>Por que usar threads, então?</div>
+          <P dark style={{ fontSize: 14.5 }}>
+            Porque um programa consegue fazer várias coisas ao mesmo tempo sem travar. Pensa no Spotify: uma thread toca a música, outra já baixa a próxima, outra atualiza a barrinha de progresso, e outra fica esperando você clicar em "Próxima". Se existisse só uma thread pra tudo isso, a música travaria toda vez que você tocasse em algum botão — porque aquela thread única estaria ocupada respondendo o clique, em vez de tocar áudio.
+          </P>
+
+          <div style={{ overflowX: "auto", marginTop: 18 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1, background: theme.blueprintLine, borderRadius: 8, overflow: "hidden", minWidth: 420 }}>
+              <div style={{ background: theme.blueprint, padding: "10px 14px", fontFamily: fontDisplay, fontWeight: 600, fontSize: 13, color: theme.copper }}>Processo</div>
+              <div style={{ background: theme.blueprint, padding: "10px 14px", fontFamily: fontDisplay, fontWeight: 600, fontSize: 13, color: theme.teal }}>Thread</div>
+              {[
+                ["É um programa", "É uma tarefa dentro do programa"],
+                ["Tem memória própria", "Compartilha a memória do processo"],
+                ["Mais pesado (mais lento de criar)", "Mais leve (mais rápido de criar)"],
+                ["Isolado dos outros processos", "Compartilha dados com as outras threads do mesmo processo"],
+              ].map((row, i) => (
+                <React.Fragment key={i}>
+                  <div style={{ background: "#101E38", padding: "10px 14px" }}>
+                    <span style={{ fontFamily: fontBody, fontSize: 13.5, color: theme.textOnDark }}>{row[0]}</span>
+                  </div>
+                  <div style={{ background: "#101E38", padding: "10px 14px" }}>
+                    <span style={{ fontFamily: fontBody, fontSize: 13.5, color: theme.textOnDark }}>{row[1]}</span>
+                  </div>
+                </React.Fragment>
+              ))}
             </div>
           </div>
-          <P dark style={{ fontSize: 15, marginTop: 12, marginBottom: 0 }}>
+
+          <P dark style={{ fontSize: 15, marginTop: 18, marginBottom: 0 }}>
             Foi exatamente esse compartilhamento que usamos no Exercício 2 da Aula 1, quando criamos uma <Term>thread</Term> pra rodar o cálculo pesado "ao mesmo tempo" que o resto do código lia a GPU — as duas partes do código, rodando em threads diferentes, conseguiam "ver" as mesmas variáveis.
           </P>
         </div>

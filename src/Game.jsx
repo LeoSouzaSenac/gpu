@@ -1,6 +1,7 @@
-import { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
+import { api } from "./lib/api";
 import {
-  Zap, GitBranch, ArrowLeft, Trophy, Clock, Check,
+  Cpu, Zap, GitBranch, ArrowLeft, Trophy, Clock, Check, X,
   Sparkles, Layers, Search
 } from "lucide-react";
 
@@ -671,6 +672,7 @@ const GAMES = [
 ];
 
 function TopNav({ active }) {
+  const loggedIn = api.isLoggedIn();
   return (
     <div style={{
       position: "sticky", top: 0, zIndex: 20, background: theme.ink,
@@ -687,6 +689,10 @@ function TopNav({ active }) {
         padding: "16px 18px", color: active === "aula2" ? theme.amber : theme.textOnDark,
         borderBottom: active === "aula2" ? `2px solid ${theme.amber}` : "2px solid transparent"
       }}>Aula 2</a>
+      <a href={loggedIn ? "#painel" : "#login"} style={{
+        marginLeft: "auto", fontFamily: fontMono, fontSize: 12, textDecoration: "none",
+        padding: "16px 18px", color: theme.textOnDark
+      }}>{loggedIn ? "Minha pontuação" : "Entrar"}</a>
     </div>
   );
 }
@@ -698,7 +704,13 @@ export default function GpuGame() {
 
   function finishGame(id, points) {
     setXp((x) => x + points);
-    if (points > 0) setCompleted((c) => ({ ...c, [id]: true }));
+    if (points > 0) {
+      setCompleted((c) => ({ ...c, [id]: true }));
+      if (api.isLoggedIn()) {
+        const game = GAMES.find((g) => g.id === id);
+        api.submitScore({ subject: "aula1", gameSlug: id, gameTitle: game.title, xp: points }).catch(() => {});
+      }
+    }
     setScreen("hub");
   }
 
